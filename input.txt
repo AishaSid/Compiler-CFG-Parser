@@ -1,0 +1,3 @@
+A -> B d | g 
+B -> C f | v 
+C -> B v | x  

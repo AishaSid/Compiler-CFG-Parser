@@ -1,0 +1,3 @@
+A -> Bd | g
+B -> Cf | v
+C -> Bv | x

@@ -1,0 +1,5 @@
+S -> A | Ac | BECSDS
+A -> Ad | F | Ae
+F -> F*G | G
+G -> (E) | H | I
+E -> G | E<G | EJG
