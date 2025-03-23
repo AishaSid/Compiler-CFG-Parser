@@ -6,6 +6,7 @@
 #include <string>
 using namespace std;
 
+int columnWidth = 13;  
 std::unordered_map<std::string, char> strToChar;  // Maps strings to single characters
 std::unordered_map<char, std::string> charToStr;  // Maps single characters back to original strings
 std::set<char> usedChars;  // Keeps track of used characters
@@ -148,4 +149,78 @@ void printMappedProduction(const std::string& production)
             std::cout << ch << " ";  // Print character if not mapped
         }
     }
+}
+
+string p(const std::string& production) 
+{
+    string s = "";
+    for (char ch : production) 
+    {  
+        if (charToStr.find(ch) != charToStr.end()) 
+        {  
+            s += charToStr[ch]; // Print the mapped string
+        } 
+        else 
+        {  
+            s += ch;  // Print character if not mapped
+        }
+    }
+return s;
+}
+
+void pstb(vector<char>& terminalSSS) 
+{
+    cout << "Parsing Table:\n";
+    cout << setw(5 + 3) << left << " ";
+    for (char terminal : terminalSSS) 
+    {
+        string s = p(string(1, terminal));
+        cout << setw(columnWidth) << left << s << "|";
+    }
+    cout << setw(columnWidth) << left << " $";
+    cout << endl;
+
+    // Print separator line
+    cout << string((columnWidth + 3) * terminalSSS.size() + 6, '-') << endl;
+
+    // Print separator line at the end
+   // cout << string((columnWidth + 3) * terminalSSS.size() + 8, '-') << endl;
+}
+
+
+void pMappedProduction(char &name,vector<char>& terminalSSS, map<char, string>& ParsingTable) 
+{
+    if (charToStr.find(name) != charToStr.end()) 
+    cout << setw(5) << left << charToStr[name] << " : ";
+    else cout << setw(5) << left << name << " : ";
+
+    
+    for (char terminal : terminalSSS) 
+    {
+        if (ParsingTable.find(terminal) != ParsingTable.end()) 
+        {
+            string productionStr = p(ParsingTable[terminal]);
+            
+            
+            cout << setw(columnWidth) << left << productionStr << "|";
+        } 
+        else 
+        {
+            cout << setw(columnWidth) << left << " " << "|";
+        }
+    }
+    if (ParsingTable.find('$') != ParsingTable.end()) 
+        {
+            string productionStr = p(ParsingTable['$']);
+            
+            
+            cout << setw(columnWidth) << left << productionStr << "|";
+        } 
+        else 
+        {
+            cout << setw(columnWidth) << left << " " << "|";
+        }
+
+
+    cout << endl;
 }

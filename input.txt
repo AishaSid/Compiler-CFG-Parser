@@ -1,3 +1,4 @@
-A -> B d | g 
-B -> C f | v 
-C -> B v | x  
+S -> A | a
+A -> B c | v f
+B -> C f | x d
+C -> A s | B c 

@@ -1,5 +1,23 @@
-S -> A | Ac | BECSDS
-A -> Ad | F | Ae
-F -> F*G | G
-G -> (E) | H | I
-E -> G | E<G | EJG
+E -> T E'
+E' -> + T E' | ^                
+T -> F T'
+T' -> * F T' | ^
+F -> id | ( E )
+
+S -> A | a
+A -> a 
+
+S -> ( L ) | a
+L -> S L'
+L' -> ) S L' | ^
+
+S -> A | A c | if E then S else S 
+A -> A d | B | A e 
+B -> B * C | C 
+C -> ( E ) | id | num 
+E -> C | E < C | E < = C 
+
+S -> A | a
+A -> B c | v f
+B -> C f | x d
+C -> A s | x B c   

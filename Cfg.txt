@@ -1,3 +1,4 @@
-A -> Bd | g
-B -> Cf | v
-C -> Bv | x
+S -> A | a
+A -> Bc | vf
+B -> Cf | xd
+C -> As | Bc

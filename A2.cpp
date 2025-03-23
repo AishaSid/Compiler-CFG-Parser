@@ -6,12 +6,15 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <iomanip>
 #include <algorithm>
 #include "test.h"
 using namespace std;
 
 vector<char> terminalSSS;
 bool find_terminal(char p , vector<char> &v);
+
+
 
 bool isNonTerminalPresent(char name);
 class Non_Terminal 
@@ -227,90 +230,7 @@ Non_Terminal(char name, vector<string> Prod)
         insertInMiddle(this, newNT);
     }
 
-    // void indirect_recursion() 
-    // {
-    //     bool changed;
-    //     do 
-    //     {
-    //         changed = false;
-    //         for (Non_Terminal* temp = head; temp != nullptr; temp = temp->next_symbol) 
-    //         {
-    //             for (Non_Terminal* targetNT = head; targetNT != nullptr; targetNT = targetNT->next_symbol) 
-    //             {
-    //                 if (temp == targetNT) continue;  // Skip same non-terminal
-    
-    //                 vector<string> newProductions;
-    //                 bool foundIndirectRecursion = false;
-    
-    //                 for (const string& prod : temp->Production) 
-    //                 {
-    //                     // Check if the production starts with targetNT (indirect recursion candidate)
-    //                     if (!prod.empty() && prod[0] == targetNT->name) 
-    //                     {
-    //                         // Check if targetNT eventually leads back to temp (indirect recursion)
-    //                         set<char> visited;
-    //                         vector<Non_Terminal*> stack;
-    //                         stack.push_back(targetNT);
-    //                         visited.insert(targetNT->name);
-    //                         bool leadsBackToTemp = false;
-
-    //                         while (!stack.empty()) 
-    //                         {
-    //                             Non_Terminal* current = stack.back();
-    //                             stack.pop_back();
-
-    //                             for (const string& subProd : current->Production) 
-    //                             {
-    //                                 if (!subProd.empty() && subProd[0] == temp->name) 
-    //                                 {
-    //                                     leadsBackToTemp = true;
-    //                                     break;
-    //                                 }
-    //                                 if (!subProd.empty() && isNonTerminalPresent(subProd[0]) && visited.find(subProd[0]) == visited.end()) 
-    //                                 {
-    //                                     Non_Terminal* nextNT = head;
-    //                                     while (nextNT && nextNT->name != subProd[0]) 
-    //                                     {
-    //                                         nextNT = nextNT->next_symbol;
-    //                                     }
-    //                                     if (nextNT) 
-    //                                     {
-    //                                         stack.push_back(nextNT);
-    //                                         visited.insert(nextNT->name);
-    //                                     }
-    //                                 }
-    //                             }
-    //                             if (leadsBackToTemp) break;
-    //                         }
-
-    //                         if (leadsBackToTemp) 
-    //                         {
-    //                             foundIndirectRecursion = true;
-    //                             for (const string& subProd : targetNT->Production) 
-    //                             {
-    //                                 newProductions.push_back(subProd + prod.substr(1));
-    //                             }
-    //                         }
-    //                     }
-                        
-    //                     if (!foundIndirectRecursion) 
-    //                     {
-    //                         newProductions.push_back(prod);
-    //                     }
-    //                 }
-    
-    //                 if (foundIndirectRecursion)
-    //                 {
-    //                     temp->Production = newProductions;
-    //                     changed = true;
-    //                 }
-    //             }
-    //         }
-    //     } while (changed);
-    // }
-
-
-    void indirect_recursion() 
+void indirect_recursion() 
 {
     bool changed;
     do 
@@ -580,21 +500,25 @@ return false;
 
     void constructParsingTable()
     {
+        ParsingTable.clear(); // Ensure the parsing table is empty at the start
         bool epsilonPresent = false;  
-             for (const string& prod : Production)
-            {
+        for (const string& prod : Production)
+        {
             // Add entries to the parsing table
-                if (prod[0] != '^' && find_terminal(prod[0], terminalSSS)) 
-
+            if (prod[0] != '^' && find_terminal(prod[0], terminalSSS)) 
+            {
+                // Add entry for the terminal
+                if (ParsingTable.find(prod[0]) != ParsingTable.end()) 
                 {
-                    // Add entry for the terminal
-                    ParsingTable[prod[0]] = prod;
-                    // idher duplicates ka issue nahi ana chahiye kiuke factoring ki hui he dumbo 
-                    continue;
+                    cout << "Grammar is not LL(1)! Conflict found at " << p(string(1, name)) << " for terminal " << prod[0] << endl;
+                   // exit(1);
                 }
-                if (prod[0] != '^')
-                {
-                 for (char terminal : prod) // its a non_terminal
+                ParsingTable[prod[0]] = prod;
+                continue;
+            }
+            if (prod[0] != '^')
+            {
+                for (char terminal : prod) // its a non_terminal
                 {
                     Non_Terminal* nextNT = head;
                     //pehle non_term ko dhoondo
@@ -605,53 +529,49 @@ return false;
                     // mil gya to uska first lena he 
                     if (nextNT)
                     {
-                    // S -> ABC   
-            for (char firstChar : nextNT->First)
-                {
-                    if(firstChar == '^')
-                        epsilonPresent = true;
-                    else
-                    {
-                        if (ParsingTable.find(firstChar) != ParsingTable.end()) 
+                        for (char firstChar : nextNT->First)
+                        {
+                            if (firstChar == '^')
+                                epsilonPresent = true;
+                            else
                             {
-                                cout << "Grammar is not LL(1)! Conflict found at " << name << " for terminal " << firstChar << "and non_term : "<< nextNT->name<< endl;
-                                exit(1);
+                                if (ParsingTable.find(firstChar) != ParsingTable.end()) 
+                                {
+                                    cout << "Grammar is not LL(1)! Conflict found at " << p(string(1, name)) << " for terminal " << firstChar << " and non_term: " << nextNT->name << endl;
+                                   // exit(1);
+                                }
+                                ParsingTable[firstChar] = prod;
                             }
-                            ParsingTable[firstChar] = prod;
-                    }
-                }
-                        if(!epsilonPresent)
+                        }
+                        if (!epsilonPresent)
                             break;
                     }      
                 }
-                    if (epsilonPresent)
+                if (epsilonPresent)
+                {
+                    for (char terminal : Follow) // its a non_terminal
+                    {
+                        if (ParsingTable.find(terminal) != ParsingTable.end()) 
                         {
-                            for (char terminal : Follow) // its a non_terminal
-                                {
-
-                            if (ParsingTable.find(terminal) != ParsingTable.end()) 
-                                {
-                                    cout << "Grammar is not LL(1)! Conflict found at " << name << " for terminal " << terminal << endl;
-                                    exit(1);
-                                }
-                                ParsingTable[terminal] = prod;
-                                }
+                            cout << "Grammar is not LL(1)! Conflict found at " << p(string(1, name)) << " for terminal " << terminal << endl;
+                          //  exit(1);
                         }
+                        ParsingTable[terminal] = prod;
+                    }
+                }
             }
-                if (prod[0] == '^')
-                {   
+            if (prod[0] == '^')
+            {   
                 for (char terminal : Follow) // its a non_terminal
+                {
+                    if (ParsingTable.find(terminal) != ParsingTable.end()) 
                     {
-
-                if (ParsingTable.find(terminal) != ParsingTable.end()) 
-                    {
-                        cout << "Grammar is not LL(1)! Conflict found at " << name << " for terminal " << terminal << endl;
-                        exit(1);
+                        cout << "Grammar is not LL(1)! Conflict found at " << p(string(1, name)) << " for terminal " << terminal << endl;
+                       // exit(1);
                     }
                     ParsingTable[terminal] = prod;
-                    }     
-                }
-            
+                }     
+            }
         }
     }
 
@@ -687,19 +607,15 @@ return false;
         cout << "}\n";
     }
 
-  void printParsingTable() 
-  {
-    printMappedProduction(string(1, name));
-  cout << " : ";
-      for (const auto& entry : ParsingTable) 
-      {
-        printMappedProduction(string(1, entry.first));
-          cout << " = ";
-        printMappedProduction(entry.second);
-            cout << " | ";
-      }
-  cout  << endl;
-  }
+void printParsingTable()    
+{
+    if(this == head)
+    { pstb(terminalSSS);}
+    
+    pMappedProduction( name, terminalSSS, ParsingTable);
+    
+    
+}
 private:
     bool isDuplicate(char c) 
     {
@@ -865,16 +781,16 @@ int main()
     cout << "\nFollow Sets:\n";
     iterateAndApply(&Non_Terminal::print_follow);
 
-    // cout << "\nConstructing Parsing Table:\n";
-    // current = Non_Terminal::head;
-    // while (current) 
-    // {
-    //     current->constructParsingTable();
-    //     current = current->next_symbol;
-    // }
+    cout << "\nConstructing Parsing Table:\n";
+    current = Non_Terminal::head;
+    while (current) 
+    {
+        current->constructParsingTable();
+        current = current->next_symbol;
+    }
 
-    // cout << "\nLL(1) Parsing Table:\n";
-    // iterateAndApply(&Non_Terminal::printParsingTable);
+    cout << "\nLL(1) Parsing Table:\n";
+    iterateAndApply(&Non_Terminal::printParsingTable);
 
     return 0;
 }
