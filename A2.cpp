@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <algorithm>
 #include "test.h"
+#include <stack>
 using namespace std;
 
 vector<char> terminalSSS;
@@ -230,88 +231,137 @@ Non_Terminal(char name, vector<string> Prod)
         insertInMiddle(this, newNT);
     }
 
-void indirect_recursion() 
-{
-    bool changed;
-    do 
+    void indirect_recursion() 
     {
-        changed = false;
-        for (Non_Terminal* temp = head; temp != nullptr; temp = temp->next_symbol) 
+        bool change = true; // Flag to track changes
+        while (change) 
         {
-            vector<string> updatedProductions;
-
-            for (const string& prod : temp->Production) 
+            change = false; // Assume no changes, will update if found
+    
+            for (Non_Terminal* temp = head; temp != nullptr; temp = temp->next_symbol) 
             {
-                bool foundIndirectRecursion = false;
-
-                // Check if the production starts with another Non-Terminal (targetNT)
-                for (Non_Terminal* targetNT = head; targetNT != nullptr; targetNT = targetNT->next_symbol) 
+                vector<string> newProductions;
+    
+                for (const string& prod : temp->Production) 
                 {
-                    if (temp == targetNT) continue;  // Skip same non-terminal
-
-                    if (!prod.empty() && prod[0] == targetNT->name) 
+                    if (!prod.empty() && isupper(prod[0]) && prod[0] != temp->name) 
                     {
-                        // Check if targetNT leads back to temp (indirect recursion detection)
-                        set<char> visited;
-                        vector<Non_Terminal*> stack;
-                        stack.push_back(targetNT);
-                        visited.insert(targetNT->name);
-                        bool leadsBackToTemp = false;
-
-                        while (!stack.empty()) 
-                        {
-                            Non_Terminal* current = stack.back();
-                            stack.pop_back();
-
-                            for (const string& subProd : current->Production) 
+                        // Found an indirect recursion candidate (A → Bγ where B is another non-terminal)
+                        Non_Terminal* targetNT = head; // Find B
+                         while (targetNT && targetNT->name != prod[0])
                             {
-                                if (!subProd.empty() && subProd[0] == temp->name) 
-                                {
-                                    leadsBackToTemp = true;
-                                    break;
-                                }
-                                if (!subProd.empty() && isNonTerminalPresent(subProd[0]) && visited.find(subProd[0]) == visited.end()) 
-                                {
-                                    Non_Terminal* nextNT = head;
-                                    while (nextNT && nextNT->name != subProd[0]) 
-                                    {
-                                        nextNT = nextNT->next_symbol;
-                                    }
-                                    if (nextNT) 
-                                    {
-                                        stack.push_back(nextNT);
-                                        visited.insert(nextNT->name);
-                                    }
-                                }
+                                targetNT = targetNT->next_symbol;
                             }
-                            if (leadsBackToTemp) break;
-                        }
-
-                        // If indirect recursion is detected, replace the production
-                        if (leadsBackToTemp) 
+    
+                        if (targetNT)
                         {
-                            foundIndirectRecursion = true;
+                            // Indirect left recursion detected, replace A → Bγ with B's productions
                             for (const string& subProd : targetNT->Production) 
                             {
-                                updatedProductions.push_back(subProd + prod.substr(1));
+                                newProductions.push_back(subProd + prod.substr(1));
                             }
-                            changed = true;
-                            break;  // No need to check other targetNTs
+                            change = true; // Mark that changes were made
+                        } 
+                        else 
+                        {
+                            // No indirect recursion, keep original production
+                            newProductions.push_back(prod);
                         }
+                    } 
+                    else 
+                    {
+                        newProductions.push_back(prod); // Keep valid productions
                     }
                 }
-
-                // If no recursion was found, keep the original production
-                if (!foundIndirectRecursion) 
-                {
-                    updatedProductions.push_back(prod);
-                }
+    
+                // Replace old productions with new ones after removing indirect recursion
+                temp->Production = newProductions;
             }
-
-            temp->Production = updatedProductions;
         }
-    } while (changed);
-}
+    }
+
+    // void indirect_recursion() 
+// {
+//     bool changed;
+//     do 
+//     {
+//         changed = false;
+//         for (Non_Terminal* temp = head; temp != nullptr; temp = temp->next_symbol) 
+//         {
+//             vector<string> updatedProductions;
+
+//             for (const string& prod : temp->Production) 
+//             {
+//                 bool foundIndirectRecursion = false;
+
+//                 // Check if the production starts with another Non-Terminal (targetNT)
+//                 for (Non_Terminal* targetNT = head; targetNT != nullptr; targetNT = targetNT->next_symbol) 
+//                 {
+//                     if (temp == targetNT) continue;  // Skip same non-terminal
+
+//                     if (!prod.empty() && prod[0] == targetNT->name) 
+//                     {
+//                         // Check if targetNT leads back to temp (indirect recursion detection)
+//                         set<char> visited;
+//                         vector<Non_Terminal*> stack;
+//                         stack.push_back(targetNT);
+//                         visited.insert(targetNT->name);
+//                         bool leadsBackToTemp = false;
+
+//                         while (!stack.empty()) 
+//                         {
+//                             Non_Terminal* current = stack.back();
+//                             stack.pop_back();
+
+//                             for (const string& subProd : current->Production) 
+//                             {
+//                                 if (!subProd.empty() && subProd[0] == temp->name) 
+//                                 {
+//                                     leadsBackToTemp = true;
+//                                     break;
+//                                 }
+//                                 if (!subProd.empty() && isNonTerminalPresent(subProd[0]) && visited.find(subProd[0]) == visited.end()) 
+//                                 {
+//                                     Non_Terminal* nextNT = head;
+//                                     while (nextNT && nextNT->name != subProd[0]) 
+//                                     {
+//                                         nextNT = nextNT->next_symbol;
+//                                     }
+//                                     if (nextNT) 
+//                                     {
+//                                         stack.push_back(nextNT);
+//                                         visited.insert(nextNT->name);
+//                                     }
+//                                 }
+//                             }
+//                             if (leadsBackToTemp) break;
+//                         }
+
+//                         // If indirect recursion is detected, replace the production
+//                         if (leadsBackToTemp) 
+//                         {
+//                             foundIndirectRecursion = true;
+//                             for (const string& subProd : targetNT->Production) 
+//                             {
+//                                 updatedProductions.push_back(subProd + prod.substr(1));
+//                             }
+//                             changed = true;
+//                             break;  // No need to check other targetNTs
+//                         }
+//                     }
+//                 }
+
+//                 // If no recursion was found, keep the original production
+//                 if (!foundIndirectRecursion) 
+//                 {
+//                     updatedProductions.push_back(prod);
+//                 }
+//             }
+
+//             temp->Production = updatedProductions;
+//         }
+//     } while (changed);
+// }
 
   void helper_first()
   {
