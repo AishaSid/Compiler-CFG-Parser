@@ -1,4 +1,4 @@
 S -> A | a
 A -> B c | v f
 B -> C f | x d
-C -> A s | B c 
+C -> A s | m c 
