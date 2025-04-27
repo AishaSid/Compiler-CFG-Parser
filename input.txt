@@ -1,4 +1,6 @@
-S -> A | a
-A -> B c | v f
-B -> C f | x d
-C -> A s | m c 
+S  -> A | A c | if E then S else S
+A  -> A d | B | A e
+B  -> B * C | C
+C  -> ( E ) | id | num
+E  -> C | E < C | E < = C
+

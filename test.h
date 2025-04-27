@@ -6,7 +6,7 @@
 #include <string>
 using namespace std;
 
-int columnWidth = 13;  
+int columnWidth = 20;  
 std::unordered_map<std::string, char> strToChar;  // Maps strings to single characters
 std::unordered_map<char, std::string> charToStr;  // Maps single characters back to original strings
 std::set<char> usedChars;  // Keeps track of used characters
@@ -101,6 +101,7 @@ void processCFG(const std::string& inputFile, const std::string& outputFile)
     if (!inFile || !outFile) 
     {
         std::cerr << "Error opening files!\n";
+        cout<< inputFile << " or " << outputFile << endl;
         return;
     }
 
@@ -168,59 +169,70 @@ string p(const std::string& production)
 return s;
 }
 
-void pstb(vector<char>& terminalSSS) 
+#include <fstream> // Add at the top if not already
+
+ofstream parsingTableFile; // Global or pass as argument if you prefer clean code
+
+void pstb(vector<char>& terminalSSS)
 {
-    cout << "Parsing Table:\n";
-    cout << setw(5 + 3) << left << " ";
+    parsingTableFile.open("ParsingTable.txt");
+    if (!parsingTableFile.is_open()) {
+        cerr << "Error: could not open ParsingTable.txt file.\n";
+        return;
+    }
+
+    parsingTableFile << "Parsing Table:\n";
+    parsingTableFile << setw(columnWidth + 3) << left << " ";
     for (char terminal : terminalSSS) 
     {
         string s = p(string(1, terminal));
-        cout << setw(columnWidth) << left << s << "|";
+        parsingTableFile << setw(columnWidth) << left << s << "|";
     }
-    cout << setw(columnWidth) << left << " $";
-    cout << endl;
+    parsingTableFile << setw(columnWidth) << left << " $" << "\n";
 
-    // Print separator line
-    cout << string((columnWidth + 3) * terminalSSS.size() + 6, '-') << endl;
-
-    // Print separator line at the end
-   // cout << string((columnWidth + 3) * terminalSSS.size() + 8, '-') << endl;
+    // Separator line
+    parsingTableFile << string((columnWidth + 3) * (terminalSSS.size() + 1), '-') << "\n";
 }
 
-
-void pMappedProduction(char &name,vector<char>& terminalSSS, map<char, string>& ParsingTable) 
+void pMappedProduction(char &name, vector<char>& terminalSSS, map<char, string>& ParsingTable)
 {
-    if (charToStr.find(name) != charToStr.end()) 
-    cout << setw(5) << left << charToStr[name] << " : ";
-    else cout << setw(5) << left << name << " : ";
+    if (!parsingTableFile.is_open()) {
+        cerr << "Error: ParsingTable.txt is not open for writing.\n";
+        return;
+    }
 
-    
+    string nonTerminalStr = (charToStr.find(name) != charToStr.end()) ? charToStr[name] : string(1, name);
+    parsingTableFile << setw(columnWidth) << left << nonTerminalStr << " : ";
+
     for (char terminal : terminalSSS) 
     {
         if (ParsingTable.find(terminal) != ParsingTable.end()) 
         {
             string productionStr = p(ParsingTable[terminal]);
-            
-            
-            cout << setw(columnWidth) << left << productionStr << "|";
+            parsingTableFile << setw(columnWidth) << left << productionStr << "|";
         } 
         else 
         {
-            cout << setw(columnWidth) << left << " " << "|";
+            parsingTableFile << setw(columnWidth) << left << " " << "|";
         }
     }
+
     if (ParsingTable.find('$') != ParsingTable.end()) 
-        {
-            string productionStr = p(ParsingTable['$']);
-            
-            
-            cout << setw(columnWidth) << left << productionStr << "|";
-        } 
-        else 
-        {
-            cout << setw(columnWidth) << left << " " << "|";
-        }
+    {
+        string productionStr = p(ParsingTable['$']);
+        parsingTableFile << setw(columnWidth) << left << productionStr << "|";
+    } 
+    else 
+    {
+        parsingTableFile << setw(columnWidth) << left << " " << "|";
+    }
 
-
-    cout << endl;
+    parsingTableFile << "\n";
 }
+
+// IMPORTANT: after all productions are written, close the file:
+void closeParsingTableFile() {
+    if (parsingTableFile.is_open())
+        parsingTableFile.close();
+}
+

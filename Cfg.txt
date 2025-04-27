@@ -1,4 +1,6 @@
-S -> A | a
-A -> Bc | vf
-B -> Cf | xd
-C -> As | Bc
+S -> A | Ac | BECSDS
+A -> Ad | F | Ae
+F -> F*G | G
+G -> (E) | H | I
+E -> G | E<G | E<=G
+J -> 

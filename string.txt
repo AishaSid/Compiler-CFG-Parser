@@ -1,0 +1,5 @@
+if id < num then id d else id * ( num )
+id d e < num
+if id then id d
+id *
+if < num then id else id

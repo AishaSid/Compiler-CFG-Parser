@@ -1,0 +1,66 @@
+-------------------------------
+
+if id < num then id d else id * ( num )
+id d e < num
+if id then id d
+id *
+if < num then id else id
+
+CFG : 
+S  -> A | A c | if E then S else S
+A  -> A d | B | A e
+B  -> B * C | C
+C  -> ( E ) | id | num
+E  -> C | E < C | E < = C
+
+------------------------------
+
+a
+a b 
+a c b 
+a c 
+a c c b 
+a B 
+b 
+a c c
+a a 
+a b c 
+
+CFG: 
+
+S -> A | A b
+A -> a | A c
+
+------------------------------
+
+int a a ;
+int a a :
+int b ; 
+a = 5 ; 
+b = 2 ; 
+if ( a ) { b = a + b * 3 ; if ( b ) { b = b + 1 ; } else { b = b - 1 ; } } else { a = 0 ; } 
+
+CFG : 
+
+Program -> StmtList 
+StmtList -> Stmt StmtList | ^ 
+Stmt -> Decl | Assign ; | IfStmt | WhileStmt | ReturnStmt ; 
+Decl -> Type id ; 
+Assign -> id = Expr 
+IfStmt -> if ( Expr ) { StmtList } ElsePart 
+ElsePart -> else { StmtList } | ^ 
+WhileStmt -> while ( Expr ) { StmtList } 
+ReturnStmt -> return Expr 
+Type -> int | float 
+Expr -> Term Expr' 
+Expr' -> + Term Expr' | - Term Expr' | ^ 
+Term -> Factor Term' 
+Term' -> * Factor Term' | / Factor Term' | ^ 
+Factor -> ( Expr ) | id | num 
+id -> Letter id | Letter 
+Letter -> a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z 
+num -> Digit num | Digit 
+Digit -> 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
+
+
+----------------------------------------------------------
